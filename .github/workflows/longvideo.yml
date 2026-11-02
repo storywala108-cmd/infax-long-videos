@@ -41,7 +41,7 @@ jobs:
         env: { TOPIC: '${{ inputs.topic }}' }
         run: if [ -n "$TOPIC" ]; then node scripts/plan.js --topic "$TOPIC"; else node scripts/plan.js; fi
       - if: always()
-        run: bash scripts/commit_state.sh "plan: new scripts"
+        run: bash scripts/commit_state.sh "plan - new scripts"
 
   check:
     if: (github.event_name == 'schedule' && github.event.schedule == '20 */3 * * *' && vars.AUTO_POST == 'on') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'check')
@@ -83,7 +83,7 @@ jobs:
       - if: failure() && steps.next.outputs.id != ''
         run: node scripts/pipeline.js fail "${{ steps.next.outputs.id }}" "check job failed"
       - if: always()
-        run: bash scripts/commit_state.sh "check: ${{ steps.next.outputs.id || 'none' }}"
+        run: bash scripts/commit_state.sh "check - ${{ steps.next.outputs.id || 'none' }}"
 
   matte:
     needs: check
@@ -151,7 +151,7 @@ jobs:
       - if: failure()
         run: node scripts/pipeline.js fail "${{ needs.check.outputs.id }}" "assemble failed"
       - if: always()
-        run: bash scripts/commit_state.sh "preview: ${{ needs.check.outputs.id }}"
+        run: bash scripts/commit_state.sh "preview - ${{ needs.check.outputs.id }}"
 
   publish:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' && inputs.id != ''
@@ -167,4 +167,4 @@ jobs:
         run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
       - run: node scripts/pipeline.js publish "${{ inputs.id }}"
       - if: always()
-        run: bash scripts/commit_state.sh "publish: ${{ inputs.id }}"
+        run: bash scripts/commit_state.sh "publish - ${{ inputs.id }}"
