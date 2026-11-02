@@ -180,10 +180,5 @@
  "recordingFolder": "1M3uNAryudg5dwhY1D9POHceJbzGrBfH-",
  "docUrl": "https://docs.google.com/document/d/1GwP_MCjdHxOe42yEJI652pGvvhQiL5FP_kB9R2MVRvY/edit?usp=drivesdk",
  "workFile": "1xTk146YQlrylJYaqzTmItqDni3jwRL4d",
- "processingSince": "2026-11-02T08:25:58.668Z",
- "lastError": {
-  "at": "2026-11-02T08:27:28.344Z",
-  "reason": "check job failed"
- },
- "failures": 1
+ "processingSince": "2026-11-02T08:25:58.668Z"
 }
