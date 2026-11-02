@@ -12,7 +12,8 @@ import { execFileSync } from 'node:child_process';
 import { ROOT, env, log } from './lib.js';
 import * as drive from './drive.js';
 
-const [cmd, id, work] = process.argv.slice(2);
+const [cmd, id, workArg] = process.argv.slice(2);
+const work = workArg && path.resolve(workArg);              // ffmpeg concat lists resolve paths from the list's folder
 const SDIR = path.join(ROOT, 'state', 'scripts');
 const load = i => JSON.parse(fs.readFileSync(path.join(SDIR, `${i}.json`), 'utf8'));
 const store = s => fs.writeFileSync(path.join(SDIR, `${s.id}.json`), JSON.stringify(s, null, 1));

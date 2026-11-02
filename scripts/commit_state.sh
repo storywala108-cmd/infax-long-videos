@@ -4,6 +4,7 @@
 rm -f .env
 git config user.name "storywala108-cmd"
 git config user.email "storywala108@gmail.com"
+node scripts/index.js || true
 git add state
 git diff --cached --quiet && exit 0
 git commit -q -m "$1"
