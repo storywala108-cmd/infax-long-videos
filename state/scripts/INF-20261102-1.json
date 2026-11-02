@@ -99,20 +99,7 @@
    ]
   }
  ],
- "sources": [
-  {
-   "name": "Operation Cactus: In Military Decision Making (IDSA Analysis)",
-   "url": "https://www.idsa.in/system/files/book/book_operation-cactus.pdf"
-  },
-  {
-   "name": "Indian Armed Forces Official History Archives - Operation Cactus 1988",
-   "url": "https://www.indiannavy.nic.in/content/operation-cactus"
-  },
-  {
-   "name": "The Hindu - 1988 Maldives Coup and India's Intervention",
-   "url": "https://www.thehindu.com/news/national/operation-cactus-how-india-rescued-maldives-in-1988/article25414321.ece"
-  }
- ],
+ "sources": [],
  "segments": [
   {
    "chapter": 0,
@@ -1126,5 +1113,6 @@
   }
  ],
  "recordingFolder": "1xopIHGqpR9_N-S-Zf16hWev7hm4Z9-dU",
- "docUrl": "https://docs.google.com/document/d/1GwP_MCjdHxOe42yEJI652pGvvhQiL5FP_kB9R2MVRvY/edit?usp=drivesdk"
+ "docUrl": "https://docs.google.com/document/d/1GwP_MCjdHxOe42yEJI652pGvvhQiL5FP_kB9R2MVRvY/edit?usp=drivesdk",
+ "sourcesNote": "3 AI-written links were dead (404) and removed 2026-11-02"
 }

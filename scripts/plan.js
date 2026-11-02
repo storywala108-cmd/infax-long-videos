@@ -74,6 +74,16 @@ Return JSON: {"title_hi":"YouTube title: Hindi in Devanagari + 1-2 English keywo
 "sources":[{"name":"publication or book","url":"https://..."}]}`,
   { check: d => { if (!d.chapters?.length) throw new Error('no chapters'); return d; } });
 
+  // AI-written source links can be made up: keep only links that really open (status < 400)
+  const live = [];
+  for (const src of o.sources || []) {
+    try {
+      const r = await fetch(src.url, { method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(15000), headers: { 'user-agent': 'Mozilla/5.0' } });
+      if (r.status < 400) live.push(src); else log('dropped source', r.status, src.url);
+    } catch { log('dropped source (no answer)', src.url); }
+  }
+  o.sources = live;
+
   // 2) chapters → segments of 1-3 spoken sentences, each with what the viewer sees
   const segments = [];
   for (const [ci, ch] of o.chapters.entries()) {
