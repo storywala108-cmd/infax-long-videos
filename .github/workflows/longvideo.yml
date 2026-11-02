@@ -1,0 +1,170 @@
+name: Infax long video
+
+on:
+  schedule:
+    - cron: '45 1 * * 6'      # Saturday ~07:15 IST: write next week's scripts (Google Docs to read on camera)
+    - cron: '20 */3 * * *'    # every 3 h: did a recording arrive in Drive? → edit it into a preview
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'check = edit a new recording; plan = write scripts; publish = upload an approved preview'
+        type: choice
+        options: [check, plan, publish]
+        default: check
+      id:
+        description: 'Script id (publish, or force check of one id)'
+        required: false
+      topic:
+        description: 'plan: own topic for ONE script (empty = trend research)'
+        required: false
+
+permissions:
+  contents: write
+
+env:
+  SHARDS: 8
+
+jobs:
+  plan:
+    if: (github.event_name == 'schedule' && github.event.schedule == '45 1 * * 6' && vars.AUTO_POST == 'on') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'plan')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency: { group: state, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: Secrets
+        env: { ENV_FILE: '${{ secrets.ENV_FILE }}' }
+        run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
+      - name: Write scripts
+        env: { TOPIC: '${{ inputs.topic }}' }
+        run: if [ -n "$TOPIC" ]; then node scripts/plan.js --topic "$TOPIC"; else node scripts/plan.js; fi
+      - if: always()
+        run: bash scripts/commit_state.sh "plan: new scripts"
+
+  check:
+    if: (github.event_name == 'schedule' && github.event.schedule == '20 */3 * * *' && vars.AUTO_POST == 'on') || (github.event_name == 'workflow_dispatch' && inputs.mode == 'check')
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    concurrency: { group: state, cancel-in-progress: false }
+    outputs:
+      id: ${{ steps.next.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: Secrets
+        env: { ENV_FILE: '${{ secrets.ENV_FILE }}' }
+        run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
+      - name: New recording?
+        id: next
+        env: { FORCE: '${{ inputs.id }}' }
+        run: |
+          ID="${FORCE:-$(node scripts/pipeline.js next)}"
+          echo "id=$ID" >> "$GITHUB_OUTPUT"; echo "recording for: ${ID:-none}"
+      - if: steps.next.outputs.id != ''
+        uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - if: steps.next.outputs.id != ''
+        uses: actions/cache@v4
+        with: { path: ~/.cache/huggingface, key: whisper-large-v3-turbo }
+      - if: steps.next.outputs.id != ''
+        name: Clean the recording (retakes, bad expressions)
+        env: { ID: '${{ steps.next.outputs.id }}' }
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q faster-whisper rapidfuzz mediapipe numpy
+          node scripts/pipeline.js fetch "$ID" work
+          python -I scripts/process.py "state/scripts/$ID.json" work/recording.mp4 work
+      - if: steps.next.outputs.id != ''
+        uses: actions/upload-artifact@v4
+        with: { name: edit, path: 'work/edit.json', retention-days: 3 }
+      - if: failure() && steps.next.outputs.id != ''
+        run: node scripts/pipeline.js fail "${{ steps.next.outputs.id }}" "check job failed"
+      - if: always()
+        run: bash scripts/commit_state.sh "check: ${{ steps.next.outputs.id || 'none' }}"
+
+  matte:
+    needs: check
+    if: needs.check.outputs.id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: true
+      matrix: { shard: [0, 1, 2, 3, 4, 5, 6, 7] }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - uses: actions/cache@v4
+        with: { path: ~/.cache/torch, key: rvm-mobilenetv3 }
+      - name: Secrets
+        env: { ENV_FILE: '${{ secrets.ENV_FILE }}' }
+        run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
+      - uses: actions/download-artifact@v4
+        with: { name: edit, path: work }
+      - name: Background swap (shard ${{ matrix.shard }})
+        env: { ID: '${{ needs.check.outputs.id }}' }
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -q numpy
+          git pull -q origin main
+          node scripts/pipeline.js pull "$ID" work
+          python -I scripts/matte.py work/edit.json work/recording.mp4 brand/bg_final.jpg work/faces ${{ matrix.shard }} $SHARDS
+      - uses: actions/upload-artifact@v4
+        with: { name: 'faces-${{ matrix.shard }}', path: work/faces, retention-days: 3, if-no-files-found: ignore }
+
+  assemble:
+    needs: [check, matte]
+    if: needs.check.outputs.id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    concurrency: { group: state, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Secrets
+        env: { ENV_FILE: '${{ secrets.ENV_FILE }}' }
+        run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
+      - uses: actions/download-artifact@v4
+        with: { name: edit, path: work }
+      - uses: actions/download-artifact@v4
+        with: { pattern: 'faces-*', path: work/faces, merge-multiple: true }
+      - name: Edit + render + preview
+        env: { ID: '${{ needs.check.outputs.id }}' }
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q pillow numpy
+          git pull -q origin main
+          node scripts/pipeline.js pull "$ID" work
+          node scripts/assemble.js "state/scripts/$ID.json" work
+          node scripts/pipeline.js preview "$ID" work
+      - if: failure()
+        run: node scripts/pipeline.js fail "${{ needs.check.outputs.id }}" "assemble failed"
+      - if: always()
+        run: bash scripts/commit_state.sh "preview: ${{ needs.check.outputs.id }}"
+
+  publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'publish' && inputs.id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency: { group: state, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      - name: Secrets
+        env: { ENV_FILE: '${{ secrets.ENV_FILE }}' }
+        run: printf '%s\n' "$ENV_FILE" | tr -d '\r' > .env
+      - run: node scripts/pipeline.js publish "${{ inputs.id }}"
+      - if: always()
+        run: bash scripts/commit_state.sh "publish: ${{ inputs.id }}"

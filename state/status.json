@@ -1,0 +1,59 @@
+{
+ "now": "Next: GitHub cloud workflow, then Rahul Studio approve tab",
+ "stages": [
+  {
+   "name": "Accounts & keys (Drive, YouTube, Gemini, FLUX)",
+   "weight": 1,
+   "pct": 100,
+   "note": "Drive connected on storywala108; Infax YouTube + keys reused"
+  },
+  {
+   "name": "Script writer + teleprompter Doc",
+   "weight": 2,
+   "pct": 80,
+   "note": "Test OK: Operation Cactus, 101 paragraphs, 3,123 words (~22 min at 1.1x)"
+  },
+  {
+   "name": "Recording cleaner (retakes, bad expressions)",
+   "weight": 3,
+   "pct": 80,
+   "note": "Tested: 6/6 paragraphs, false start auto-removed (large-v3-turbo + batched); face check needs your real recording"
+  },
+  {
+   "name": "Background swap (dark room + lamp)",
+   "weight": 2,
+   "pct": 60,
+   "note": "Background final: brand/bg_final.jpg (option 1, colour-matched to your reference)"
+  },
+  {
+   "name": "Audio (noise clean, loud, 1.1x, powerful music)",
+   "weight": 1,
+   "pct": 80,
+   "note": "Noise clean + compressor + 1.1x + ducked Mixkit drums/cinematic bed; test -14.1 LUFS"
+  },
+  {
+   "name": "Visuals (AI images, maps, source & name cards)",
+   "weight": 2,
+   "pct": 85,
+   "note": "AI images every ~6 s, map/source/name cards, Infax logo; tested"
+  },
+  {
+   "name": "Edit + render + preview in Drive",
+   "weight": 2,
+   "pct": 70,
+   "note": "1-min test render OK (intro+body+outro); preview upload code ready"
+  },
+  {
+   "name": "Rahul Studio Approve tab + YouTube upload",
+   "weight": 2,
+   "pct": 0,
+   "note": ""
+  },
+  {
+   "name": "GitHub cloud schedule (3 videos/week)",
+   "weight": 1,
+   "pct": 0,
+   "note": "starts paused until you approve"
+  }
+ ]
+}

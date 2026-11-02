@@ -1,0 +1,7 @@
+.env
+work/
+TEST_*.mp4
+STATUS.html
+STATUS.html.tmp
+node_modules/
+__pycache__/
