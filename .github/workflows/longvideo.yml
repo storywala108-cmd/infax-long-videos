@@ -73,7 +73,7 @@ jobs:
         name: Clean the recording (retakes, bad expressions)
         env: { ID: '${{ steps.next.outputs.id }}' }
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libegl1 libgles2 > /dev/null
           pip install -q faster-whisper rapidfuzz mediapipe numpy
           node scripts/pipeline.js fetch "$ID" work
           python -I scripts/process.py "state/scripts/$ID.json" work/recording.mp4 work
@@ -147,6 +147,7 @@ jobs:
           git pull -q origin main
           node scripts/pipeline.js pull "$ID" work
           node scripts/assemble.js "state/scripts/$ID.json" work
+          node scripts/thumb.js "state/scripts/$ID.json" work || echo "thumbnail failed (video still goes to preview)"
           node scripts/pipeline.js preview "$ID" work
       - if: failure()
         run: node scripts/pipeline.js fail "${{ needs.check.outputs.id }}" "assemble failed"

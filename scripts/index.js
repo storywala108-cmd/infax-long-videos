@@ -10,7 +10,7 @@ const items = fs.readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWi
   return {
     id: s.id, topic: s.topic, title: s.title_hi, status: s.status, created: s.created, words: s.words,
     doc: s.docUrl || null, folder: s.recordingFolder ? `https://drive.google.com/drive/folders/${s.recordingFolder}` : null,
-    preview: s.preview ? { url: s.preview.url, embed: `https://drive.google.com/file/d/${s.preview.fileId}/preview`, minutes: s.preview.minutes,
+    preview: s.preview ? { url: s.preview.url, thumb: s.preview.thumbUrl || null, embed: `https://drive.google.com/file/d/${s.preview.fileId}/preview`, minutes: s.preview.minutes,
       lufs: s.preview.lufs, paragraphs: s.preview.paragraphs, dropped: s.preview.dropped } : null,
     youtube: s.youtubeId ? `https://youtu.be/${s.youtubeId}` : null, error: s.lastError || null,
   };

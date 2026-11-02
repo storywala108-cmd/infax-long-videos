@@ -64,6 +64,10 @@ if (cmd === 'next') {
   const fid = await drive.uploadFile(path.join(work, 'final.mp4'), `${id} ${s.topic}.mp4`, pf, 'video/mp4', { infaxId: id });
   s.preview = { fileId: fid, url: await drive.shareLink(fid), at: new Date().toISOString(),
     ...JSON.parse(fs.readFileSync(path.join(work, 'assemble_state.json'), 'utf8')).final };
+  if (fs.existsSync(path.join(work, 'thumb.jpg'))) {
+    s.preview.thumbId = await drive.uploadFile(path.join(work, 'thumb.jpg'), `${id} thumbnail.jpg`, pf, 'image/jpeg');
+    s.preview.thumbUrl = await drive.shareLink(s.preview.thumbId);
+  }
   if (fs.existsSync(path.join(work, 'edit.json'))) {
     const e = JSON.parse(fs.readFileSync(path.join(work, 'edit.json'), 'utf8'));
     s.preview.paragraphs = `${e.takes.filter(t => t.ok).length}/${e.takes.length}`;
@@ -92,7 +96,11 @@ if (cmd === 'next') {
     categoryId: '27', privacy: 'public', synthetic: true });
   s.youtubeId = v.id; s.status = 'published'; s.publishedAt = new Date().toISOString();
   store(s);
-  if (s.thumb && fs.existsSync(path.join(ROOT, s.thumb))) await setThumbnail(v.id, path.join(ROOT, s.thumb)).catch(e => log('thumb', e.message));
+  if (s.preview.thumbId) {
+    const t = path.join(ROOT, 'work', `${id}_thumb.jpg`);
+    await drive.download(s.preview.thumbId, t);
+    await setThumbnail(v.id, t).catch(e => log('thumb', e.message));     // needs a phone-verified channel
+  }
   log('published https://youtu.be/' + v.id);
 } else if (cmd === 'fail') {
   const s = load(id);
