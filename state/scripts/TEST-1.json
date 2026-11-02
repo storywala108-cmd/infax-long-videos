@@ -4,7 +4,7 @@
  "topic": "TEST pipeline check",
  "angle": "An investigative breakdown of how Indian paratroopers launched a midnight airborne intervention with zero local intelligence or maps to thwart a armed mercenary coup in Male.",
  "words": 3123,
- "status": "processing",
+ "status": "preview",
  "title_hi": "Operation Cactus: कैसे भारतीय सेना ने सिर्फ़ 12 घंटे में मालदीव को तख्तापलट से बचाया? | Military Operation Breakdown",
  "chapters": [
   {
@@ -180,5 +180,17 @@
  "recordingFolder": "1M3uNAryudg5dwhY1D9POHceJbzGrBfH-",
  "docUrl": "https://docs.google.com/document/d/1GwP_MCjdHxOe42yEJI652pGvvhQiL5FP_kB9R2MVRvY/edit?usp=drivesdk",
  "workFile": "1m1WL-b_yjE7W7ZCxm-ayo2r4Q7rYrxS2",
- "processingSince": "2026-11-02T08:32:03.883Z"
+ "processingSince": "2026-11-02T08:32:03.883Z",
+ "preview": {
+  "fileId": "1KnQu-f5EQoFoc_iGWUfs5I1frz0L7DBQ",
+  "url": "https://drive.google.com/file/d/1KnQu-f5EQoFoc_iGWUfs5I1frz0L7DBQ/view",
+  "at": "2026-11-02T08:40:02.429Z",
+  "minutes": 1.21,
+  "lufs": -14.1,
+  "sizeMB": 17,
+  "thumbId": "1CUEf599wha0aredXoYlolvU4blh1XUMG",
+  "thumbUrl": "https://drive.google.com/file/d/1CUEf599wha0aredXoYlolvU4blh1XUMG/view",
+  "paragraphs": "6/6",
+  "dropped": []
+ }
 }
